@@ -2,7 +2,6 @@ import Task from "../model/creteTask.js";
 import UserTaskSubmit from "../model/submitTask.js";
 import { configDotenv } from 'dotenv';
 import cloudinary from 'cloudinary'
-import multer from 'multer'
 configDotenv()
 
 cloudinary.config({
@@ -74,4 +73,27 @@ const submitTask = async (req, res) => {
   }
 };
 
-export { getTaskuser ,submitTask}
+// get my all work 
+let myWork = async (req,res)=>{
+  const { userId } = req.body
+  try {
+    let get = await UserTaskSubmit.find({userId : "123"})
+   let approve =  get.filter((item)=>{
+      return item.status === 'approved'
+    })
+    let pending =  get.filter((item)=>{
+      return item.status === 'pending'
+    })
+    let rejected =  get.filter((item)=>{
+      return item.status === 'rejected'
+    })
+    let revision =  get.filter((item)=>{
+      return item.status === 'revision'
+    })
+    return res.status(200).json({approve,rejected,revision,pending});
+} catch (error) {
+    return res.status(500).json({ message: "Internal server error" });
+}
+}
+
+export { getTaskuser ,submitTask,myWork}
