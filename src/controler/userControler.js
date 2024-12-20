@@ -2,6 +2,7 @@ import Task from "../model/creteTask.js";
 import UserTaskSubmit from "../model/submitTask.js";
 import { configDotenv } from 'dotenv';
 import cloudinary from 'cloudinary'
+import PayementModel from "../model/paymentModel.js";
 configDotenv()
 
 cloudinary.config({
@@ -96,4 +97,26 @@ let myWork = async (req,res)=>{
 }
 }
 
-export { getTaskuser ,submitTask,myWork}
+// Add fund 
+let userPayment = async (req,res)=>{
+  const {userId,paymeMethod,PaymentType,amount} = req.body
+  try {
+    let add = new PayementModel({userId,paymeMethod,PaymentType,amount})
+    let addPayment = await add.save()
+    return res.status(200).json({message : "payment request succesful added" , addPayment});
+  } catch (error) {
+    return res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+// my payment history 
+let getPaymentHistory = async (req,res)=>{
+  //useParams 
+  try {
+    let getPayment = await PayementModel.find({userId : "123"})
+    return res.status(200).json(getPayment)
+} catch (error) {
+    return res.status(500).json({ message: "Internal server error" });
+}
+}
+export { getTaskuser ,submitTask,myWork,userPayment ,getPaymentHistory}

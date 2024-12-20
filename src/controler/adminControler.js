@@ -1,4 +1,6 @@
+import User from '../model/authModel.js'
 import Task from '../model/creteTask.js'
+import PayementModel from '../model/paymentModel.js'
 
 
 
@@ -19,7 +21,6 @@ let getTask = async (req, res) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 }
-
 
 let approve_task = async (req, res) => {
     const { id } = req.params;
@@ -55,4 +56,22 @@ let reject_task = async (req, res) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 }
-export { pendingTask, getTask, approve_task, reject_task }
+// getAll user 
+let getUser = async (req,res) =>{
+    try {
+        let getUser = await User.find()
+        return res.status(200).json(getUser)
+    } catch (error) {
+        return res.status(500).json({ message: "Internal server error" });
+    }
+}
+// get all Payment
+let getPayment = async (req, res) => {
+    try {
+        let getPayment = await PayementModel.find()
+        return res.status(200).json(getPayment)
+    } catch (error) {
+        return res.status(500).json({ message: "Internal server error" });
+    }
+}
+export { pendingTask, getTask, approve_task, reject_task ,getPayment,getUser}
