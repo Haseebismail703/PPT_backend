@@ -1,3 +1,4 @@
+import User from '../model/authModel.js';
 import Task from '../model/creteTask.js';
 import UserTaskSubmit from '../model/submitTask.js';
 
@@ -75,6 +76,20 @@ let getTaskbyId = async (req, res) => {
         return res.status(500).json({ message: error.message });
     }
 }
+// get all proof in my_compaign/id page  remaining 
+let getallproofbyId = async (req, res) => {
+    const { taskId } = req.params;
+    try {
+        let getallTask = await UserTaskSubmit.find({ taskId });
+        return res.status(200).json(getallTask);
+    } catch (error) {
+        console.error("Error in getallproofbyId:", error.message);
+
+        // Return an error response
+        return res.status(500).json({ message: "An error occurred", error: error.message });
+    }
+};
+
 // reject approve revision task 
 let UpdateTaskProf = async (req, res) => {
     const { userId, taskId, status } = req.body; // Extract data from request body
@@ -133,4 +148,4 @@ let statusUpdate = async (req, res) => {
     }
 }
 
-export { createTask, getTaskbyId, statusUpdate,UpdateTaskProf };
+export { createTask, getTaskbyId, statusUpdate,UpdateTaskProf,getallproofbyId };

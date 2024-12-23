@@ -3,6 +3,7 @@ import UserTaskSubmit from "../model/submitTask.js";
 import { configDotenv } from 'dotenv';
 import cloudinary from 'cloudinary'
 import PayementModel from "../model/paymentModel.js";
+import User from "../model/authModel.js";
 configDotenv()
 
 cloudinary.config({
@@ -11,7 +12,7 @@ cloudinary.config({
     api_secret: process.env.api_secret,
 });
 
-
+// all task in user page
 let getTaskuser = async (req, res) => {
     try {
         let get = await Task.find({ active: true, status: "Running" })
@@ -20,12 +21,31 @@ let getTaskuser = async (req, res) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 }
+// get task using id 
+const getTaskByuser = async (req, res) => {
+  const { taskId } = req.params;
+  try {
+    const task = await Task.findById(taskId); // No need to use `{ _id: taskId }` with `findById`.
+    if (!task) {
+      return res.status(404).json({ message: "Task not found" }); // Handle case when task is not found.
+    }
+    return res.status(200).json(task);
+  } catch (error) {
+    return res.status(500).json({ message: "Internal server error", error: error.message }); // Include error details for debugging.
+  }
+};
+
+
 // SubmitTask from publisher 
 const submitTask = async (req, res) => {
-  const { userId, taskId, comment } = req.body;
+  const { country,userId, taskId, comment,advId } = req.body;
   console.log(req.body);
   
   try {
+   let userName = await User.findById(userId)
+   let task = await Task.findById(taskId)
+
+
     // Check if files are uploaded
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ message: "No files uploaded" });
@@ -51,10 +71,14 @@ const submitTask = async (req, res) => {
 
     // Create a new document in MongoDB
     const newTaskSubmit = new UserTaskSubmit({
+      username : userName.username,
       userId : userId,
       taskId : taskId,
       comment : comment,
+      advId : advId ,
       imgurl: imageUrls, 
+      publisherReward: task.publisherReward,
+      country : country
     });
     await newTaskSubmit.save();
 
@@ -119,4 +143,6 @@ let getPaymentHistory = async (req,res)=>{
     return res.status(500).json({ message: "Internal server error" });
 }
 }
-export { getTaskuser ,submitTask,myWork,userPayment ,getPaymentHistory}
+
+
+export { getTaskuser ,submitTask,myWork,userPayment ,getPaymentHistory,getTaskByuser}
