@@ -45,7 +45,7 @@ let submitTask = new Schema({
   },
   status: {
     type: Schema.Types.String,
-    enum: ["pending", "approved", "rejected", "revision"], // Status options
+    enum: ["pending", "approved", "reject", "revision"], // Status options
     default: "pending",
   },
   revisionComments: {
