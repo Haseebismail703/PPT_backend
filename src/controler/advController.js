@@ -96,7 +96,7 @@ let getallproofbyId = async (req, res) => {
 let UpdateTaskProf = async (req, res) => {
     const { userId, taskId, status, revisionComments } = req.body; // Extract data from request body
 
-    console.log(req.body);  // Log the request body to check the data
+    // console.log(req.body);  
 
     // Validate status
     const validStatuses = ["approved", "reject", "revision"];
@@ -151,4 +151,27 @@ let statusUpdate = async (req, res) => {
     }
 }
 
-export { createTask, getTaskbyId, statusUpdate,UpdateTaskProf,getallproofbyId };
+let allApRejRevTask = async (req,res)=>{
+    const { taskId } = req.params
+    try {
+     let get = await UserTaskSubmit.findOne(taskId)
+     let approve =  get.filter((item)=>{
+        return item.status === 'approved'
+      })
+      let pending =  get.filter((item)=>{
+        return item.status === 'pending'
+      })
+      let rejected =  get.filter((item)=>{
+        return item.status === 'rejected'
+      })
+      let revision =  get.filter((item)=>{
+        return item.status === 'revision'
+      })
+      console.log(approve,rejected,revision,pending)
+      
+      return res.status(200).json({approve,rejected,revision,pending});
+  } catch (error) {
+      return res.status(500).json({ message: "Internal server error" });
+  }
+  }
+export { createTask, getTaskbyId, statusUpdate,UpdateTaskProf,getallproofbyId,allApRejRevTask };

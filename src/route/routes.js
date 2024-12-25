@@ -1,7 +1,7 @@
 import express from "express";
 import multer  from "multer";
 import { signupUser, signinUser, adminLogin } from '../controler/authController.js'
-import { createTask, getallproofbyId, getTaskbyId, statusUpdate, UpdateTaskProf } from "../controler/advController.js";
+import { allApRejRevTask, createTask, getallproofbyId, getTaskbyId, statusUpdate, UpdateTaskProf } from "../controler/advController.js";
 import { pendingTask, getTask, approve_task, reject_task, getPayment, getUser } from '../controler/adminControler.js'
 import { getPaymentHistory, getTaskuser,getTaskByuser,myWork,submitTask, userPayment } from '../controler/userControler.js'
 const router = express.Router();
@@ -19,6 +19,7 @@ router.post('/adminLogin', adminLogin);
 router.post('/createTask', createTask);
 router.get('/getTaskbyId/:id', getTaskbyId);
 router.get('/getallproofbyId/:taskId',getallproofbyId)
+router.get('/allApRejRevTask/:taskId',allApRejRevTask)
 router.put('/UpdateTaskProf',UpdateTaskProf);
 router.put('/statusUpdate/:id', statusUpdate);
 // admin rotes
