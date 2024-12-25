@@ -28,6 +28,10 @@ let submitTask = new Schema({
   advId: {
     type: Schema.Types.String,
   },
+  revision: {
+    type: Schema.Types.Boolean,
+    default: false
+  },
   imgurl: {
     type: [
       {

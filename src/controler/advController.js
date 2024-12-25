@@ -67,7 +67,7 @@ let createTask = async (req, res) => {
 // get all task id  in advertiser  page 
 let getTaskbyId = async (req, res) => {
     const { id } = req.params
-    console.log(req.body);
+    // console.log(req.body);
 
     try {
         let getallTask = await Task.find({ advertiserId: id })
@@ -81,9 +81,11 @@ let getallproofbyId = async (req, res) => {
     const { taskId } = req.params; 
     try {
         let getallTask = await UserTaskSubmit.find({ taskId });
-        console.log(getallTask);
+        let getProof = await getallTask.filter((task) => task.status === 'pending');
+        let revision = await getallTask.filter((task) => task.status === 'revision');
+        // console.log(getallTask);
         
-        return res.status(200).json(getallTask);
+        return res.status(200).json({getProof,revision});
     } catch (error) {
         console.error("Error in getallproofbyId:", error.message);
 
@@ -94,10 +96,15 @@ let getallproofbyId = async (req, res) => {
 
 // reject approve revision task 
 let UpdateTaskProf = async (req, res) => {
-    const { userId, taskId, status, revisionComments } = req.body; // Extract data from request body
-
-    // console.log(req.body);  
-
+    const { userId, taskId, status, revisionComments } = req.body; 
+  
+       if(status === 'revision' ){
+        let taskRevision = await UserTaskSubmit.findOneAndUpdate(
+            { userId, taskId },
+            { revision : true },
+            { new: true }
+        );
+       }
     // Validate status
     const validStatuses = ["approved", "reject", "revision"];
     if (!validStatuses.includes(status)) {
@@ -127,12 +134,11 @@ let UpdateTaskProf = async (req, res) => {
     }
 };
 
-  
 // statctus active disable api 
 let statusUpdate = async (req, res) => {
     const { id } = req.params;
     const { active } = req.body;
-    console.log(req.body);
+    // console.log(req.body);
 
     try {
         const task = await Task.findByIdAndUpdate(
@@ -150,26 +156,15 @@ let statusUpdate = async (req, res) => {
         res.status(500).json({ message: 'Failed to update task status', error });
     }
 }
-
+// get all proof in the advertiser page
 let allApRejRevTask = async (req,res)=>{
     const { taskId } = req.params
+    // console.log(req.params);
+    
     try {
-     let get = await UserTaskSubmit.findOne(taskId)
-     let approve =  get.filter((item)=>{
-        return item.status === 'approved'
-      })
-      let pending =  get.filter((item)=>{
-        return item.status === 'pending'
-      })
-      let rejected =  get.filter((item)=>{
-        return item.status === 'rejected'
-      })
-      let revision =  get.filter((item)=>{
-        return item.status === 'revision'
-      })
-      console.log(approve,rejected,revision,pending)
-      
-      return res.status(200).json({approve,rejected,revision,pending});
+     let getProof = await UserTaskSubmit.find({taskId : taskId})
+     let getTask = await Task.findOne({_id : taskId})
+      return res.status(200).json({getProof,getTask});
   } catch (error) {
       return res.status(500).json({ message: "Internal server error" });
   }

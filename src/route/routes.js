@@ -18,22 +18,22 @@ router.post('/adminLogin', adminLogin);
 // advertiser routes 
 router.post('/createTask', createTask);
 router.get('/getTaskbyId/:id', getTaskbyId);
-router.get('/getallproofbyId/:taskId',getallproofbyId)
-router.get('/allApRejRevTask/:taskId',allApRejRevTask)
+router.get('/getallproofbyId/:taskId',getallproofbyId);
+router.get('/allApRejRevTask/:taskId',allApRejRevTask);
 router.put('/UpdateTaskProf',UpdateTaskProf);
 router.put('/statusUpdate/:id', statusUpdate);
 // admin rotes
-router.get('/getUser',getUser)
+router.get('/getUser',getUser);
 router.get('/pendingTask', pendingTask);
 router.get('/getTask', getTask);
 router.put('/approve_task/:id', approve_task);
 router.put('/reject_task/:id', reject_task);
-router.get('/getPayment',getPayment)
+router.get('/getPayment',getPayment);
 // User route 
 router.get('/getTaskuser', getTaskuser);
-router.get('/getTaskByuser/:taskId',getTaskByuser)
-router.post('/submitTask', upload.array('file', 3),submitTask)
-router.get('/myWork',myWork)
-router.post('/payment',userPayment)
-router.get('/getPaymentHistory',getPaymentHistory)
-export default router
+router.get('/getTaskByuser/:taskId',getTaskByuser);
+router.post('/submitTask', upload.array('file', 3),submitTask);
+router.get('/myWork',myWork);
+router.post('/payment',userPayment);
+router.get('/getPaymentHistory',getPaymentHistory);
+export default router;
