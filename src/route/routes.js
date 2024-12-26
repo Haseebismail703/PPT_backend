@@ -33,7 +33,7 @@ router.get('/getPayment',getPayment);
 router.get('/getTaskuser', getTaskuser);
 router.get('/getTaskByuser/:taskId',getTaskByuser);
 router.post('/submitTask', upload.array('file', 3),submitTask);
-router.get('/myWork',myWork);
+router.get('/myWork/:userId',myWork);
 router.post('/payment',userPayment);
 router.get('/getPaymentHistory',getPaymentHistory);
 export default router;

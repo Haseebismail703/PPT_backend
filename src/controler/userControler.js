@@ -99,27 +99,36 @@ const submitTask = async (req, res) => {
 };
 
 // get my all work 
-let myWork = async (req,res)=>{
-  const { userId } = req.body
+let myWork = async (req, res) => {
+  const { userId } = req.params;
+
   try {
-    let get = await UserTaskSubmit.find({userId : "123"})
-   let approve =  get.filter((item)=>{
-      return item.status === 'approved'
-    })
-    let pending =  get.filter((item)=>{
-      return item.status === 'pending'
-    })
-    let rejected =  get.filter((item)=>{
-      return item.status === 'rejected'
-    })
-    let revision =  get.filter((item)=>{
-      return item.status === 'revision'
-    })
-    return res.status(200).json({approve,rejected,revision,pending});
-} catch (error) {
-    return res.status(500).json({ message: "Internal server error" });
-}
-}
+    // Fetch all task submissions for the user
+    let submissions = await UserTaskSubmit.find({ userId: userId });
+
+    // Fetch task details for each submission
+    let tasksWithDetails = await Promise.all(
+      submissions.map(async (submission) => {
+        let taskDetails = await Task.findById(submission.taskId);
+        return {
+          ...submission._doc, // Include submission details
+          taskDetails,        // Add corresponding task details
+        };
+      })
+    );
+
+    // Filter submissions by status
+    let approved = tasksWithDetails.filter((item) => item.status === 'approved');
+    let pending = tasksWithDetails.filter((item) => item.status === 'pending');
+    let reject = tasksWithDetails.filter((item) => item.status === 'reject');
+    let revision = tasksWithDetails.filter((item) => item.status === 'revision');
+
+    return res.status(200).json({ approved, reject, revision, pending });
+  } catch (error) {
+    return res.status(500).json({ message: "Internal server error", error });
+  }
+};
+
 
 // Add fund 
 let userPayment = async (req,res)=>{
