@@ -7,11 +7,11 @@ const Payement = new Schema({
         type: Schema.Types.String,
         required: true,
     },
-    paymeMethod: {
+    paymentMethod: {
         type: Schema.Types.String,
         required: true,
     },
-    PaymentType: {
+    paymentType: {
         type: Schema.Types.String,
         required: true
     },
@@ -19,6 +19,11 @@ const Payement = new Schema({
         type: Schema.Types.Number,
         required: true
     },
+    TID: {
+        type: Schema.Types.String,
+        required: true
+    },
+
 }, {
     timestamps: {
         createdAt: 'created_at',

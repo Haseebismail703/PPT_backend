@@ -1,5 +1,6 @@
 import User from '../model/authModel.js';
 import Task from '../model/creteTask.js';
+import PayementModel from '../model/paymentModel.js';
 import UserTaskSubmit from '../model/submitTask.js';
 
 // create task compaign  in advertiser page 
@@ -63,7 +64,6 @@ let createTask = async (req, res) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 }
-
 // get all task id  in advertiser  page 
 let getTaskbyId = async (req, res) => {
     const { id } = req.params
@@ -93,7 +93,6 @@ let getallproofbyId = async (req, res) => {
         return res.status(500).json({ message: "An error occurred", error: error.message });
     }
 };
-
 // reject approve revision task 
 let UpdateTaskProf = async (req, res) => {
     const { userId, taskId, status, revisionComments } = req.body; 
@@ -133,7 +132,6 @@ let UpdateTaskProf = async (req, res) => {
         res.status(500).json({ message: "Server error", error: error.message });
     }
 };
-
 // statctus active disable api 
 let statusUpdate = async (req, res) => {
     const { id } = req.params;
@@ -168,5 +166,32 @@ let allApRejRevTask = async (req,res)=>{
   } catch (error) {
       return res.status(500).json({ message: "Internal server error" });
   }
-  }
-export { createTask, getTaskbyId, statusUpdate,UpdateTaskProf,getallproofbyId,allApRejRevTask };
+}
+
+const addFund = async (req, res) => {
+    // console.log(req.body);
+    
+    try {
+        // Input validation (Optional, depends on your needs)
+        const { userId, amount, paymentMethod, paymentType, TID } = req.body;
+
+        if (!userId || !amount || !paymentMethod || !paymentType || !TID) {
+            return res.status(400).json({ message: "All fields are required." });
+        }
+        // Ensure amount is a positive number
+        if (amount <= 0) {
+            return res.status(400).json({ message: "Amount must be greater than zero." });
+        }
+        // Create and save the payment
+        const add = new PayementModel({userId, amount, paymentMethod, paymentType, TID});
+        const addFund = await add.save();
+
+        return res.status(201).json({ message: "Fund added successfully.", data: addFund });
+    } catch (error) {
+        // Handle errors
+        console.error("Error adding fund:", error.message);
+        return res.status(500).json({ message: "Internal Server Error", error: error.message });
+    }
+};
+
+export { createTask, getTaskbyId, statusUpdate,UpdateTaskProf,getallproofbyId,allApRejRevTask,addFund };
