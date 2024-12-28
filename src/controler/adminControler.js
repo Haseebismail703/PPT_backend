@@ -65,13 +65,24 @@ let getUser = async (req,res) =>{
         return res.status(500).json({ message: "Internal server error" });
     }
 }
-// get all Payment
+// get all Payment request 
 let getPayment = async (req, res) => {
     try {
-        let getPayment = await PayementModel.find()
-        return res.status(200).json(getPayment)
+        let getPayment = await PayementModel.find();
+        let getDeposite = await getPayment.filter((payment) => payment.paymentType === 'Deposit');
+        let getWithdraw = await getPayment.filter((payment) => payment.paymentType === 'Withdraw');
+        return res.status(200).json({getDeposite,getWithdraw});
     } catch (error) {
-        return res.status(500).json({ message: "Internal server error" });
+        return res.status(500).json({ message: error.message });
     }
 }
-export { pendingTask, getTask, approve_task, reject_task ,getPayment,getUser}
+// transaction history  
+let PaymentHistory = async (req, res) => {
+    try {
+        let getPayment = await PayementModel.find();
+        return res.status(200).json(getPayment);
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
+    }
+}
+export { pendingTask, getTask, approve_task, reject_task ,getPayment,getUser,PaymentHistory}

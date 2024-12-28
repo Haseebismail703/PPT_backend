@@ -167,13 +167,13 @@ let allApRejRevTask = async (req,res)=>{
       return res.status(500).json({ message: "Internal server error" });
   }
 }
-
+// add fund in advertiser page
 const addFund = async (req, res) => {
     // console.log(req.body);
     
     try {
         // Input validation (Optional, depends on your needs)
-        const { userId, amount, paymentMethod, paymentType, TID } = req.body;
+        const {userId, amount, paymentMethod, paymentType, TID } = req.body;
 
         if (!userId || !amount || !paymentMethod || !paymentType || !TID) {
             return res.status(400).json({ message: "All fields are required." });
@@ -182,10 +182,11 @@ const addFund = async (req, res) => {
         if (amount <= 0) {
             return res.status(400).json({ message: "Amount must be greater than zero." });
         }
+        let user = await User.findById(userId);
+        let userName = user.username;
         // Create and save the payment
-        const add = new PayementModel({userId, amount, paymentMethod, paymentType, TID});
+        const add = new PayementModel({userId, amount, paymentMethod, paymentType, TID,userName});
         const addFund = await add.save();
-
         return res.status(201).json({ message: "Fund added successfully.", data: addFund });
     } catch (error) {
         // Handle errors
