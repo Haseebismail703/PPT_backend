@@ -26,6 +26,18 @@ const userSchema = new Schema({
         type: Schema.Types.String,
         default: 'not selected'
     },
+    earning: {
+        type: Schema.Types.Number,
+        default: 0
+    },
+    advBalance: {
+        type: Schema.Types.Number,
+        default: 0
+    },
+    status: {
+        type: Schema.Types.String,
+        default: 'active'
+    },
     profileurl: {
         type: Schema.Types.String,
         default: 'https://img.freepik.com/free-psd/3d-icon-social-media-app_23-2150049569.jpg?size=338&ext=jpg&ga=GA1.1.1141335507.1719273600&semt=ais_user'

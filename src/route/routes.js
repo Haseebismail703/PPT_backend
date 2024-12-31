@@ -2,7 +2,7 @@ import express from "express";
 import multer  from "multer";
 import { signupUser, signinUser, adminLogin } from '../controler/authController.js'
 import { allApRejRevTask, createTask, getallproofbyId, getTaskbyId, statusUpdate, UpdateTaskProf,addFund } from "../controler/advController.js";
-import { pendingTask, getTask, approve_task, reject_task, getPayment, getUser,PaymentHistory } from '../controler/adminControler.js'
+import { pendingTask, getTask, approve_task, reject_task, getPayment, getUser,PaymentHistory,blockUser } from '../controler/adminControler.js'
 import { getPaymentHistory, getTaskuser,getTaskByuser,myWork,submitTask, userPayment } from '../controler/userControler.js'
 const router = express.Router();
 const storage = multer.diskStorage({});
@@ -25,6 +25,7 @@ router.put('/statusUpdate/:id', statusUpdate);
 router.post('/addFund',addFund);
 // admin rotes
 router.get('/getUser',getUser);
+router.put('/blockUser/:id',blockUser);
 router.get('/pendingTask', pendingTask);
 router.get('/getTask', getTask);
 router.put('/approve_task/:id', approve_task);

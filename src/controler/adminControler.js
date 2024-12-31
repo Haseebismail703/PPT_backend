@@ -85,4 +85,20 @@ let PaymentHistory = async (req, res) => {
         return res.status(500).json({ message: error.message });
     }
 }
-export { pendingTask, getTask, approve_task, reject_task ,getPayment,getUser,PaymentHistory}
+//block user 
+let blockUser = async (req, res) => {
+    const { id } = req.params;
+    const { status } = req.body;
+    try {
+        let block = await User.findByIdAndUpdate
+            (id,
+                { status },
+                { new: true }
+            )
+        res.json({ message: `User ${status} successfully`, block });
+    }
+    catch (error) {
+        return res.status(500).json({ message: "Internal server error" });
+    }
+}
+export { pendingTask, getTask, approve_task, reject_task ,getPayment,getUser,PaymentHistory,blockUser}
