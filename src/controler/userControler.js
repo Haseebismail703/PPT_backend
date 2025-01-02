@@ -34,8 +34,6 @@ const getTaskByuser = async (req, res) => {
     return res.status(500).json({ message: "Internal server error", error: error.message }); // Include error details for debugging.
   }
 };
-
-
 // SubmitTask from publisher 
 const submitTask = async (req, res) => {
   const { country,userId, taskId, comment,advId } = req.body;
@@ -97,7 +95,6 @@ const submitTask = async (req, res) => {
     });
   }
 };
-
 // get my all work 
 let myWork = async (req, res) => {
   const { userId } = req.params;

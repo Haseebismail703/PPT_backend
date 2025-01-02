@@ -101,5 +101,30 @@ let blockUser = async (req, res) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 }
-
-export { pendingTask, getTask, approve_task, reject_task ,getPayment,getUser,PaymentHistory,blockUser}
+let paidWithdrow = async (req, res) => {
+    const { id } = req.params;
+    const {TID,status,rejectReason,amount} = req.body;
+    
+    try {
+        if(amount){
+            let block = await PayementModel.findByIdAndUpdate
+                (id,
+                    { status,amount },
+                    { new: true }
+                )
+            res.json({ message: `Withdrowel request ${status} successfully`, block });    
+            }else{
+             let block = await PayementModel.findByIdAndUpdate
+            (id,
+                { status,TID,rejectReason },
+                { new: true }
+            )
+        res.json({ message: `Withdrowel request ${status} successfully`, block });   
+            }
+        
+    }
+    catch (error) {
+        return res.status(500).json({ message: "Internal server error" });
+    }
+}
+export { pendingTask, getTask, approve_task, reject_task ,getPayment,getUser,PaymentHistory,blockUser,paidWithdrow}

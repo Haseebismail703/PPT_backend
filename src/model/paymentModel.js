@@ -30,8 +30,11 @@ const Payement = new Schema({
     status : {
         type: Schema.Types.String,
         default : "pending"
+    },
+    rejectReason : {
+        type: Schema.Types.String,
+        default : ""
     }
-
 }, {
     timestamps: {
         createdAt: 'created_at',
