@@ -128,20 +128,42 @@ let myWork = async (req, res) => {
     return res.status(500).json({ message: "Internal server error", error });
   }
 };
+// withdrow fund 
+const userPayment = async (req, res) => {
+  const { userId, paymentMethod, paymentType, amount } = req.body;
 
-
-// Add fund 
-let userPayment = async (req,res)=>{
-  const {userId,paymeMethod,PaymentType,amount} = req.body
   try {
-    let add = new PayementModel({userId,paymeMethod,PaymentType,amount})
-    let addPayment = await add.save()
-    return res.status(200).json({message : "payment request succesful added" , addPayment});
+    // Fetch user and get username
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    const userName = user.username;
+
+    // Create new payment record
+    const payment = new PayementModel({
+      userId,
+      paymentMethod,
+      paymentType,
+      amount,
+      userName,
+    });
+
+    // Save the payment record to the database
+    const addPayment = await payment.save();
+
+    // Respond with success
+    return res.status(200).json({
+      message: "Payment request successfully added",
+      addPayment,
+    });
   } catch (error) {
+    console.error(error);
+
+    // Respond with internal server error
     return res.status(500).json({ message: "Internal server error" });
   }
-}
-
+};
 // my payment history 
 let getPaymentHistory = async (req,res)=>{
   //useParams 

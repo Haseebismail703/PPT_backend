@@ -25,7 +25,7 @@ const Payement = new Schema({
     },
     TID: {
         type: Schema.Types.String,
-        required: true
+        default : '',
     },
     status : {
         type: Schema.Types.String,
@@ -39,6 +39,6 @@ const Payement = new Schema({
     }
 });
 
-const PayementModel = mongoose.model('payment', Payement);
+const PayementModel = mongoose.model('payments', Payement);
 
 export default PayementModel;
