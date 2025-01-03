@@ -4,6 +4,7 @@ import { configDotenv } from 'dotenv';
 import cloudinary from 'cloudinary'
 import PayementModel from "../model/paymentModel.js";
 import User from "../model/authModel.js";
+import report from "../model/reportModel.js";
 configDotenv()
 
 cloudinary.config({
@@ -163,14 +164,56 @@ const userPayment = async (req, res) => {
 };
 // my payment history 
 let getPaymentHistory = async (req,res)=>{
-  //useParams 
+  const {id} = req.params
   try {
-    let getPayment = await PayementModel.find({userId : "123"})
+    let getPayment = await PayementModel.find({userId : id})
     return res.status(200).json(getPayment)
 } catch (error) {
     return res.status(500).json({ message: "Internal server error" });
 }
 }
+// report task
+const reportTask = async (req, res) => {
+  const { userId, taskId, reportType, reportDesc } = req.body;
+  try {
 
+   // Check if report already exists
+    const existingReport = await report.findOne({ userId, taskId});
+    if (existingReport) {
+      return res.status(400).send({ message: "Report already exists" });
+    }
 
-export { getTaskuser ,submitTask,myWork,userPayment ,getPaymentHistory,getTaskByuser}
+    // Check if user exists
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Check if task exists
+    const task = await Task.findById(taskId);
+    if (!task) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+
+    // Create a new report
+    const taskReport = {
+      taskName : task.taskTitle,
+      userName: user.username,
+      userId,
+      taskId,
+      reportType,
+      reportDesc
+    };
+
+    let creatReport = new report(taskReport);
+    await creatReport.save();
+
+    // Respond with success
+    return res.status(200).json({ message: "Task reported successfully" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Internal server error", error: error.message });
+  }
+};
+
+export { getTaskuser ,submitTask,myWork,userPayment ,getPaymentHistory,getTaskByuser,reportTask}

@@ -1,8 +1,7 @@
 import User from '../model/authModel.js'
 import Task from '../model/creteTask.js'
 import PayementModel from '../model/paymentModel.js'
-
-
+import report from '../model/reportModel.js'
 
 let pendingTask = async (req, res) => {
     try {
@@ -68,7 +67,7 @@ let getUser = async (req,res) =>{
 // get all Payment request 
 let getPayment = async (req, res) => {
     try {
-        let getPayment = await PayementModel.find();
+        let getPayment = await PayementModel.find({status : "pending"});
         let getDeposite = await getPayment.filter((payment) => payment.paymentType === 'Deposit');
         let getWithdraw = await getPayment.filter((payment) => payment.paymentType === 'Withdraw');
         return res.status(200).json({getDeposite,getWithdraw});
@@ -127,4 +126,13 @@ let paidWithdrow = async (req, res) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 }
-export { pendingTask, getTask, approve_task, reject_task ,getPayment,getUser,PaymentHistory,blockUser,paidWithdrow}
+// getreport 
+let getTaskReport = async (req, res) => {
+    try {
+        let getPayment = await report.find();
+        return res.status(200).json(getPayment);
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
+    }
+}
+export { pendingTask, getTask, approve_task, reject_task ,getPayment,getUser,PaymentHistory,blockUser,paidWithdrow,getTaskReport}

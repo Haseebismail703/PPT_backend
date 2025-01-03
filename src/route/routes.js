@@ -2,8 +2,8 @@ import express from "express";
 import multer  from "multer";
 import { signupUser, signinUser, adminLogin } from '../controler/authController.js'
 import { allApRejRevTask, createTask, getallproofbyId, getTaskbyId, statusUpdate, UpdateTaskProf,addFund } from "../controler/advController.js";
-import { pendingTask, getTask, approve_task, reject_task, getPayment, getUser,PaymentHistory,blockUser, paidWithdrow } from '../controler/adminControler.js'
-import { getPaymentHistory, getTaskuser,getTaskByuser,myWork,submitTask, userPayment } from '../controler/userControler.js'
+import { pendingTask, getTask, approve_task, reject_task, getPayment, getUser,PaymentHistory,blockUser, paidWithdrow ,getTaskReport} from '../controler/adminControler.js'
+import { getPaymentHistory, getTaskuser,getTaskByuser,myWork,submitTask, userPayment,reportTask } from '../controler/userControler.js'
 const router = express.Router();
 const storage = multer.diskStorage({});
 
@@ -33,11 +33,13 @@ router.put('/reject_task/:id', reject_task);
 router.get('/getPayment',getPayment);
 router.get('/PaymentHistory',PaymentHistory)
 router.put('/paidWithdrow/:id',paidWithdrow)
+router.get('/getTaskReport',getTaskReport)
 // User route 
 router.get('/getTaskuser', getTaskuser);
 router.get('/getTaskByuser/:taskId',getTaskByuser);
 router.post('/submitTask', upload.array('file', 3),submitTask);
 router.get('/myWork/:userId',myWork);
 router.post('/payment',userPayment);
-router.get('/getPaymentHistory',getPaymentHistory);
+router.get('/getPaymentHistory/:id',getPaymentHistory);
+router.post('/reportTask',reportTask);
 export default router;
