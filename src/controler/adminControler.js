@@ -2,7 +2,7 @@ import User from '../model/authModel.js'
 import Task from '../model/creteTask.js'
 import PayementModel from '../model/paymentModel.js'
 import report from '../model/reportModel.js'
-
+import UserTaskSubmit from '../model/submitTask.js'
 let pendingTask = async (req, res) => {
     try {
         let task = await Task.find({ status: "Pending" })
@@ -135,4 +135,14 @@ let getTaskReport = async (req, res) => {
         return res.status(500).json({ message: error.message });
     }
 }
-export { pendingTask, getTask, approve_task, reject_task ,getPayment,getUser,PaymentHistory,blockUser,paidWithdrow,getTaskReport}
+//get all report task deatial
+let getReportTask = async (req, res) => {
+    const { taskId } = req.params;
+    try {
+        let getPayment = await UserTaskSubmit.find({taskId});
+        return res.status(200).json(getPayment);
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
+    }
+}
+export { pendingTask, getTask, approve_task, reject_task ,getPayment,getUser,PaymentHistory,blockUser,paidWithdrow,getTaskReport,getReportTask}
