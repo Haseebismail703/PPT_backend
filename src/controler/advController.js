@@ -16,7 +16,8 @@ let createTask = async (req, res) => {
             workersNeeded,
             publisherReward,
             targetCountries,
-            advertiserId
+            advertiserId,
+            // userName
         } = req.body;
         // console.log(req.body);
 
@@ -47,14 +48,15 @@ let createTask = async (req, res) => {
             publisherReward,
             targetCountries,
             totalPriceWithoutFee,
-            advertiserId
+            advertiserId,
+            // userName
         });
 
         // Save task to MongoDB
         await newTask.save();
 
         // Return success response
-        return res.status(201).json({
+        return res.status(200).json({
             message: "Task created successfully",
             task: newTask
         });

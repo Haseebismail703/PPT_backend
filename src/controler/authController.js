@@ -7,7 +7,7 @@ configDotenv()
 // user signup api 
 const signupUser = async (req, res) => {
     const { username, email, password, role } = req.body;
-       console.log(req.body)
+    //    console.log(req.body)
     try {
         let userByUsername = await User.findOne({ username });
         if (userByUsername) {

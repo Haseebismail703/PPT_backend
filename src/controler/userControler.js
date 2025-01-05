@@ -38,7 +38,7 @@ const getTaskByuser = async (req, res) => {
 // SubmitTask from publisher 
 const submitTask = async (req, res) => {
   const { country,userId, taskId, comment,advId } = req.body;
-  console.log(req.body);
+  // console.log(req.body);
   
   try {
    let userName = await User.findById(userId)
@@ -70,6 +70,7 @@ const submitTask = async (req, res) => {
 
     // Create a new document in MongoDB
     const newTaskSubmit = new UserTaskSubmit({
+      taskName : task.taskTitle,
       username : userName.username,
       userId : userId,
       taskId : taskId,

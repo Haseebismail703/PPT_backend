@@ -1,6 +1,10 @@
 import mongoose, { Schema } from "mongoose";
 
 let submitTask = new Schema({
+  taskName : {
+    type: Schema.Types.String,
+    required: true,
+  },
   username: {
     type: Schema.Types.String,
     default: "123"
