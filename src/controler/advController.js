@@ -17,7 +17,6 @@ let createTask = async (req, res) => {
             publisherReward,
             targetCountries,
             advertiserId,
-            // userName
         } = req.body;
         // console.log(req.body);
 
@@ -33,7 +32,8 @@ let createTask = async (req, res) => {
         if (workersNeeded < 1) {
             return res.status(400).json({ message: "At least one worker is needed" });
         }
-
+        
+        let user = await User.findOne({_id : advertiserId });
         // Calculate total price without fee
         const totalPriceWithoutFee = workersNeeded * publisherReward;
 
@@ -49,7 +49,7 @@ let createTask = async (req, res) => {
             targetCountries,
             totalPriceWithoutFee,
             advertiserId,
-            // userName
+            userName : user?.username
         });
 
         // Save task to MongoDB
