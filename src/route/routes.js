@@ -3,7 +3,7 @@ import multer  from "multer";
 import { signupUser, signinUser, adminLogin } from '../controler/authController.js'
 import { allApRejRevTask, createTask, getallproofbyId, getTaskbyId, statusUpdate, UpdateTaskProf,addFund } from "../controler/advController.js";
 import { pendingTask, getTask, approve_task, reject_task, getPayment, getUser,PaymentHistory,blockUser, paidWithdrow ,getTaskReport,getReportTask} from '../controler/adminControler.js'
-import { getPaymentHistory, getTaskuser,getTaskByuser,myWork,submitTask, userPayment,reportTask } from '../controler/userControler.js'
+import { getPaymentHistory, getTaskuser,getTaskByuser,myWork,submitTask, userPayment,reportTask,userProfile,profileUpdate } from '../controler/userControler.js'
 const router = express.Router();
 const storage = multer.diskStorage({});
 
@@ -43,4 +43,6 @@ router.get('/myWork/:userId',myWork);
 router.post('/payment',userPayment);
 router.get('/getPaymentHistory/:id',getPaymentHistory);
 router.post('/reportTask',reportTask);
+router.get('/userProfile/:id',userProfile);
+router.put('/profileUpdate/:id',upload.array('file', 1),profileUpdate);
 export default router;

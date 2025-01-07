@@ -107,10 +107,7 @@ let paidWithdrow = async (req, res) => {
     try {
         if(amount){
             let block = await PayementModel.findByIdAndUpdate
-                (id,
-                    { status,amount },
-                    { new: true }
-                )
+                (id,{ status,amount },{ new: true })
             res.json({ message: `Withdrowel request ${status} successfully`, block });    
             }else{
              let block = await PayementModel.findByIdAndUpdate

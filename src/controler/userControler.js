@@ -217,4 +217,68 @@ const reportTask = async (req, res) => {
   }
 };
 
-export { getTaskuser ,submitTask,myWork,userPayment ,getPaymentHistory,getTaskByuser,reportTask}
+let userProfile = async (req,res)=>{
+  const {id} = req.params
+  try {
+    let user = await User.findById(id)
+    return res.status(200).json(user)
+} catch (error) {
+    return res.status(500).json({ message: "Internal server error" });
+}
+}
+
+const profileUpdate = async (req, res) => {
+  const { id } = req.params;
+  const { username } = req.body;
+  const file = req.files ? req.files[0] : null; // Check if files are present
+
+  try {
+    // Find the user in the database
+    let user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    let updateData = {};
+
+    // If a file is uploaded, upload to Cloudinary and update profile image
+    if (file) {
+      const result = await cloudinary.uploader.upload(file.path, {
+        folder: "user_profile",
+        use_filename: true,
+        resource_type: "image",
+      });
+
+      // Destroy the old image if it exists
+      if (user.public_id) {
+        await cloudinary.uploader.destroy(user.public_id);
+      }
+
+      updateData.profileurl = result.secure_url;
+      updateData.public_id = result.public_id;
+    }
+
+    // Update username if provided
+    if (username) {
+      updateData.username = username;
+    }
+
+    // Update the user's profile
+    let update = await User.findByIdAndUpdate(id, updateData, { new: true });
+
+    res.status(200).json({
+      message: "Profile updated successfully",
+      update,
+    });
+  } catch (err) {
+    console.error("Error during profile update:", err);
+    // Handle server errors
+    res.status(500).json({
+      message: "Server error",
+      error: err.message, // Optional: Include error details for debugging
+    });
+  }
+};
+
+
+export { getTaskuser ,submitTask,myWork,userPayment ,getPaymentHistory,getTaskByuser,reportTask,userProfile,profileUpdate}
