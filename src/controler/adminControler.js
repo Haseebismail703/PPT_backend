@@ -100,29 +100,56 @@ let blockUser = async (req, res) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 }
-let paidWithdrow = async (req, res) => {
+const paidWithdrow = async (req, res) => {
     const { id } = req.params;
-    const {TID,status,rejectReason,amount} = req.body;
-    
+    const { TID, status, rejectReason, amount , userId } = req.body;
+    //  console.log(req.body,req.params)
     try {
-        if(amount){
-            let block = await PayementModel.findByIdAndUpdate
-                (id,{ status,amount },{ new: true })
-            res.json({ message: `Withdrowel request ${status} successfully`, block });    
-            }else{
-             let block = await PayementModel.findByIdAndUpdate
-            (id,
-                { status,TID,rejectReason },
-                { new: true }
-            )
-        res.json({ message: `Withdrowel request ${status} successfully`, block });   
+        if (!id) {
+            return res.status(400).json({ message: "User ID is required" });
+        }
+
+        // Handle case when status is 'added'
+        if (status === 'added') {
+            const user = await User.findById({_id : userId});
+
+            if (!user) {
+                return res.status(404).json({ message: "User not found" });
             }
-        
+
+            // Update User's advBalance
+            user.advBalance += amount;
+            user.status = status;
+            await user.save();
+
+            // Update Payment Model status
+            await PayementModel.findByIdAndUpdate(id, { status }, { new: true });
+
+            return res.json({ message: "Balance updated successfully" });
+        }
+
+        // Common logic for handling withdraw requests
+        const updateData = { status };
+        if (amount) {
+            updateData.amount = amount;
+        } else {
+            updateData.TID = TID;
+            updateData.rejectReason = rejectReason;
+        }
+
+        const payment = await PayementModel.findByIdAndUpdate(id, updateData, { new: true });
+
+        if (!payment) {
+            return res.status(404).json({ message: "Payment record not found" });
+        }
+
+        res.json({ message: `Withdrawal request ${status} successfully`, payment });
+    } catch (error) {
+        console.error("Error in paidWithdrow:", error);
+        res.status(500).json({ message: "Internal server error" });
     }
-    catch (error) {
-        return res.status(500).json({ message: "Internal server error" });
-    }
-}
+};
+
 // getreport 
 let getTaskReport = async (req, res) => {
     try {
