@@ -217,6 +217,14 @@ const reportTask = async (req, res) => {
   }
 };
 
+let getUserByid = async (req,res)=>{
+  const {id} = req.params
+  try {
+    let user = await User.findById(id)
+    res.status(200).json(user)
+  } catch (error) {
+    return res.status(500).json({ message: "Internal server error", error: error.message });
+  }
+}
 
-
-export { getTaskuser ,submitTask,myWork,userPayment ,getPaymentHistory,getTaskByuser,reportTask}
+export { getTaskuser ,submitTask,myWork,userPayment ,getPaymentHistory,getTaskByuser,reportTask,getUserByid}
