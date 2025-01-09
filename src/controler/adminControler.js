@@ -103,12 +103,22 @@ let blockUser = async (req, res) => {
 const paidWithdrow = async (req, res) => {
     const { id } = req.params;
     const { TID, status, rejectReason, amount , userId } = req.body;
-    //  console.log(req.body,req.params)
+     console.log(req.body,req.params)
     try {
+
+        if (status === "paid") {
+            const user = await User.findById({ _id: userId });
+            if (!user) {
+            return res.status(404).json({ message: "User not found" });
+            }
+            user.earning -= amount;
+            await user.save();
+            // console.log(user);
+        }
+
         if (!id) {
             return res.status(400).json({ message: "User ID is required" });
         }
-
         // Handle case when status is 'added'
         if (status === 'added') {
             const user = await User.findById({_id : userId});
