@@ -109,13 +109,15 @@ const submitTask = async (req, res) => {
 
     // Filter pending and rejected tasks
     const pendingTask = countTask.filter((item) => item.status === "pending");
-    const rejectTask = countTask.filter((item) => item.status === "reject");
+    const rejectTask = countTask.filter((item) => item.status === "revision");
 
     // Calculate total unapproved tasks
-    const unapprovedTasks = pendingTask.length + rejectTask.length + 1;
-    console.log(unapprovedTasks)
+    const unapprovedTasks = pendingTask.length + rejectTask.length ;
+    console.log("re",unapprovedTasks)
     // Update task status to "Complete" if the required number of workers is reached
-    if (unapprovedTasks >= task.workersNeeded) {
+     
+    if (task.workersNeeded === unapprovedTasks) {
+      console.log(task.workersNeeded , unapprovedTasks)
       await Task.findByIdAndUpdate(
         taskId,
         { status: "Complete", active: false },
