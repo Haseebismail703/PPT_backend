@@ -129,12 +129,40 @@ let getallproofbyId = async (req, res) => {
 };
 // reject approve revision task 
 let UpdateTaskProf = async (req, res) => {
-    const { userId, taskId, status, revisionComments } = req.body;
+    const { userId, taskId, status, revisionComments , publisherReward } = req.body;
+    console.log (req.body)
+
+    //update the task proof counting 
+    let task = await Task.findById(taskId)
+    let submitTask = await UserTaskSubmit.findById({_id : taskId})
+    if(status === "reject"){
+        let taskreject = await Task.findOneAndUpdate(
+            { _id : taskId },
+            { taskProof : task.taskProof - 1 },
+            { new: true }
+        );
+        if(task.status === "Complete"){
+            let statusUpdate = await Task.findOneAndUpdate(
+                { _id : taskId },
+                {status : "Running" , active : true },
+                { new: true }
+            );
+        }
+    }
 
     if (status === 'revision') {
         let taskRevision = await UserTaskSubmit.findOneAndUpdate(
             { userId, taskId },
             { revision: true },
+            { new: true }
+        );
+    } 
+    
+    if (status === "approved"){
+        let getUser = await User.findById({_id : userId})
+        let updateEarning = await User.findOneAndUpdate(
+           {_id :  userId},
+            { earning : getUser.earning + publisherReward  },
             { new: true }
         );
     }

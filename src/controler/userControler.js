@@ -8,19 +8,19 @@ import report from "../model/reportModel.js";
 configDotenv()
 
 cloudinary.config({
-    cloud_name: process.env.cloud_name,
-    api_key: process.env.api_key,
-    api_secret: process.env.api_secret,
+  cloud_name: process.env.cloud_name,
+  api_key: process.env.api_key,
+  api_secret: process.env.api_secret,
 });
 
 // all task in user page
 let getTaskuser = async (req, res) => {
-    try {
-        let get = await Task.find({ active: true, status: "Running" })
-        return res.status(200).json(get);
-    } catch (error) {
-        return res.status(500).json({ message: "Internal server error" });
-    }
+  try {
+    let get = await Task.find({ active: true, status: "Running" })
+    return res.status(200).json(get);
+  } catch (error) {
+    return res.status(500).json({ message: "Internal server error" });
+  }
 }
 // get task using id 
 const getTaskByuser = async (req, res) => {
@@ -37,13 +37,24 @@ const getTaskByuser = async (req, res) => {
 };
 // SubmitTask from publisher 
 const submitTask = async (req, res) => {
-  const { country,userId, taskId, comment,advId } = req.body;
-  // console.log(req.body);
-  
-  try {
-   let userName = await User.findById(userId)
-   let task = await Task.findById(taskId)
+  const { country, userId, taskId, comment, advId } = req.body;
 
+  try {
+    // Fetch user and task details
+    const userName = await User.findById(userId);
+    const task = await Task.findById(taskId);
+
+    if (task.status === "Complete") {
+      return res.status(400).json({ message: "Task is not available" });
+    }
+
+    if (!userName) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (!task) {
+      return res.status(404).json({ message: "Task not found" });
+    }
 
     // Check if files are uploaded
     if (!req.files || req.files.length === 0) {
@@ -70,33 +81,65 @@ const submitTask = async (req, res) => {
 
     // Create a new document in MongoDB
     const newTaskSubmit = new UserTaskSubmit({
-      taskName : task.taskTitle,
-      username : userName.username,
-      userId : userId,
-      taskId : taskId,
-      comment : comment,
-      advId : advId ,
-      imgurl: imageUrls, 
+      taskName: task.taskTitle,
+      username: userName.username,
+      userId: userId,
+      taskId: taskId,
+      comment: comment,
+      advId: advId,
+      imgurl: imageUrls,
       publisherReward: task.publisherReward,
-      country : country
+      country: country,
     });
-    await newTaskSubmit.save();
+
+    // Save the task submission
+    let saveSubmitTask = await newTaskSubmit.save();
+    // update the task Proof
+    if (saveSubmitTask) {
+      await Task.findByIdAndUpdate(
+        taskId,
+        { taskProof: task.taskProof + 1 },
+        { new: true }
+      )
+    }
+
+    // Fetch all submissions for the given taskId
+    const countTask = await UserTaskSubmit.find({ taskId });
+    // console.log(countTask);
+
+    // Filter pending and rejected tasks
+    const pendingTask = countTask.filter((item) => item.status === "pending");
+    const rejectTask = countTask.filter((item) => item.status === "reject");
+
+    // Calculate total unapproved tasks
+    const unapprovedTasks = pendingTask.length + rejectTask.length + 1;
+    console.log(unapprovedTasks)
+    // Update task status to "Complete" if the required number of workers is reached
+    if (unapprovedTasks >= task.workersNeeded) {
+      await Task.findByIdAndUpdate(
+        taskId,
+        { status: "Complete", active: false },
+        { new: true }
+      );
+    }
+
 
     // Send a success response
     res.status(200).json({
-      message: "Images uploaded successfully",
-      newTaskSubmit
+      message: "Task submitted successfully",
+      newTaskSubmit,
     });
   } catch (err) {
-    console.error("Error during image upload:", err);
-
+    console.error("Error during task submission:", err);
     // Handle server errors
     res.status(500).json({
       message: "Server error",
-      error: err.message, // Optional: Include error details for debugging
+      error: err.message, // Include error details for debugging
     });
   }
 };
+
+
 // get my all work 
 let myWork = async (req, res) => {
   const { userId } = req.params;
@@ -164,22 +207,22 @@ const userPayment = async (req, res) => {
   }
 };
 // my payment history 
-let getPaymentHistory = async (req,res)=>{
-  const {id} = req.params
+let getPaymentHistory = async (req, res) => {
+  const { id } = req.params
   try {
-    let getPayment = await PayementModel.find({userId : id})
+    let getPayment = await PayementModel.find({ userId: id })
     return res.status(200).json(getPayment)
-} catch (error) {
+  } catch (error) {
     return res.status(500).json({ message: "Internal server error" });
-}
+  }
 }
 // report task
 const reportTask = async (req, res) => {
   const { userId, taskId, reportType, reportDesc } = req.body;
   try {
 
-   // Check if report already exists
-    const existingReport = await report.findOne({ userId, taskId});
+    // Check if report already exists
+    const existingReport = await report.findOne({ userId, taskId });
     if (existingReport) {
       return res.status(400).send({ message: "Report already exists" });
     }
@@ -198,7 +241,7 @@ const reportTask = async (req, res) => {
 
     // Create a new report
     const taskReport = {
-      taskName : task.taskTitle,
+      taskName: task.taskTitle,
       userName: user.username,
       userId,
       taskId,
@@ -217,8 +260,8 @@ const reportTask = async (req, res) => {
   }
 };
 
-let getUserByid = async (req,res)=>{
-  const {id} = req.params
+let getUserByid = async (req, res) => {
+  const { id } = req.params
   try {
     let user = await User.findById(id)
     res.status(200).json(user)
@@ -227,4 +270,4 @@ let getUserByid = async (req,res)=>{
   }
 }
 
-export { getTaskuser ,submitTask,myWork,userPayment ,getPaymentHistory,getTaskByuser,reportTask,getUserByid}
+export { getTaskuser, submitTask, myWork, userPayment, getPaymentHistory, getTaskByuser, reportTask, getUserByid }

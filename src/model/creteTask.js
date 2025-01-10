@@ -35,6 +35,10 @@ const taskSchema = new mongoose.Schema({
         required: true,
         min: 0.1
     },
+    taskProof: {
+        type: Number,
+        default : 0
+    },
     targetCountries: {
         type: [String],
         required: true

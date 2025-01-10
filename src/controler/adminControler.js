@@ -3,6 +3,7 @@ import Task from '../model/creteTask.js'
 import PayementModel from '../model/paymentModel.js'
 import report from '../model/reportModel.js'
 import UserTaskSubmit from '../model/submitTask.js'
+
 let pendingTask = async (req, res) => {
     try {
         let task = await Task.find({ status: "Pending" })
@@ -42,17 +43,15 @@ let approve_task = async (req, res) => {
 let reject_task = async (req, res) => {
     const { id } = req.params;
     const { reject_reason, status , advertiserId , totalPriceWithoutFee} = req.body;
-    console.log(req.body);
-
+    // console.log(req.body);
     try {
-
         let user = await User.findById({_id : advertiserId})
         let returnFund = await User.findByIdAndUpdate(
             advertiserId,
             { advBalance : user.advBalance + totalPriceWithoutFee } ,
             {new : true}
             )
-            
+
         let reject = await Task.findByIdAndUpdate(
             id,
             { reject_reason, status },
@@ -167,7 +166,6 @@ const paidWithdrow = async (req, res) => {
         res.status(500).json({ message: "Internal server error" });
     }
 };
-
 // getreport 
 let getTaskReport = async (req, res) => {
     try {
