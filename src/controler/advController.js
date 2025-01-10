@@ -18,10 +18,21 @@ let createTask = async (req, res) => {
             targetCountries,
             advertiserId,
         } = req.body;
-        // console.log(req.body);
+
+        console.log(req.body);
 
         // Validation checks
-        if (!taskTitle || !taskDescription || !category || !subcategory || !instructions || !workersNeeded || !publisherReward || !targetCountries || !advertiserId) {
+        if (
+            !taskTitle || 
+            !taskDescription || 
+            !category || 
+            !subcategory || 
+            !instructions || 
+            !workersNeeded || 
+            !publisherReward || 
+            !targetCountries || 
+            !advertiserId
+        ) {
             return res.status(400).json({ message: "All fields are required" });
         }
 
@@ -32,8 +43,28 @@ let createTask = async (req, res) => {
         if (workersNeeded < 1) {
             return res.status(400).json({ message: "At least one worker is needed" });
         }
-        
-        let user = await User.findOne({_id : advertiserId });
+
+        // Fetch the advertiser's user details
+        const user = await User.findById(advertiserId);
+        if (!user) {
+            return res.status(404).json({ message: "Advertiser not found" });
+        }
+
+        const advertiserBalance = user.advBalance;
+        const totalCost = workersNeeded * publisherReward;
+
+        // Check if the advertiser has sufficient funds
+        if (totalCost > advertiserBalance) {
+            return res.status(400).json({ message: "Insufficient funds. Please add more funds." });
+        }
+
+        // Deduct the cost from the advertiser's balance
+        await User.findByIdAndUpdate(
+            advertiserId,
+            { advBalance: advertiserBalance - totalCost },
+            { new: true }
+        );
+
         // Calculate total price without fee
         const totalPriceWithoutFee = workersNeeded * publisherReward;
 
@@ -49,7 +80,7 @@ let createTask = async (req, res) => {
             targetCountries,
             totalPriceWithoutFee,
             advertiserId,
-            userName : user?.username
+            userName: user.username,
         });
 
         // Save task to MongoDB
@@ -58,14 +89,15 @@ let createTask = async (req, res) => {
         // Return success response
         return res.status(200).json({
             message: "Task created successfully",
-            task: newTask
+            task: newTask,
         });
 
     } catch (error) {
-        console.error(error);
+        console.error("Error creating task:", error);
         return res.status(500).json({ message: "Internal server error" });
     }
-}
+};
+
 // get all task id  in advertiser  page 
 let getTaskbyId = async (req, res) => {
     const { id } = req.params
@@ -80,14 +112,14 @@ let getTaskbyId = async (req, res) => {
 }
 // get all proof in my_compaign/id page  remaining 
 let getallproofbyId = async (req, res) => {
-    const { taskId } = req.params; 
+    const { taskId } = req.params;
     try {
         let getallTask = await UserTaskSubmit.find({ taskId });
         let getProof = await getallTask.filter((task) => task.status === 'pending');
         let revision = await getallTask.filter((task) => task.status === 'revision');
         // console.log(getallTask);
-        
-        return res.status(200).json({getProof,revision});
+
+        return res.status(200).json({ getProof, revision });
     } catch (error) {
         console.error("Error in getallproofbyId:", error.message);
 
@@ -97,15 +129,15 @@ let getallproofbyId = async (req, res) => {
 };
 // reject approve revision task 
 let UpdateTaskProf = async (req, res) => {
-    const { userId, taskId, status, revisionComments } = req.body; 
-  
-       if(status === 'revision' ){
+    const { userId, taskId, status, revisionComments } = req.body;
+
+    if (status === 'revision') {
         let taskRevision = await UserTaskSubmit.findOneAndUpdate(
             { userId, taskId },
-            { revision : true },
+            { revision: true },
             { new: true }
         );
-       }
+    }
     // Validate status
     const validStatuses = ["approved", "reject", "revision"];
     if (!validStatuses.includes(status)) {
@@ -157,25 +189,25 @@ let statusUpdate = async (req, res) => {
     }
 }
 // get all proof in the advertiser page
-let allApRejRevTask = async (req,res)=>{
+let allApRejRevTask = async (req, res) => {
     const { taskId } = req.params
     // console.log(req.params);
-    
+
     try {
-     let getProof = await UserTaskSubmit.find({taskId : taskId})
-     let getTask = await Task.findOne({_id : taskId})
-      return res.status(200).json({getProof,getTask});
-  } catch (error) {
-      return res.status(500).json({ message: "Internal server error" });
-  }
+        let getProof = await UserTaskSubmit.find({ taskId: taskId })
+        let getTask = await Task.findOne({ _id: taskId })
+        return res.status(200).json({ getProof, getTask });
+    } catch (error) {
+        return res.status(500).json({ message: "Internal server error" });
+    }
 }
 // add fund in advertiser page
 const addFund = async (req, res) => {
     // console.log(req.body);
-    
+
     try {
         // Input validation (Optional, depends on your needs)
-        const {userId, amount, paymentMethod, paymentType, TID } = req.body;
+        const { userId, amount, paymentMethod, paymentType, TID } = req.body;
 
         if (!userId || !amount || !paymentMethod || !paymentType || !TID) {
             return res.status(400).json({ message: "All fields are required." });
@@ -187,7 +219,7 @@ const addFund = async (req, res) => {
         let user = await User.findById(userId);
         let userName = user.username;
         // Create and save the payment
-        const add = new PayementModel({userId, amount, paymentMethod, paymentType, TID,userName});
+        const add = new PayementModel({ userId, amount, paymentMethod, paymentType, TID, userName });
         const addFund = await add.save();
         return res.status(201).json({ message: "Fund added successfully.", data: addFund });
     } catch (error) {
@@ -197,4 +229,4 @@ const addFund = async (req, res) => {
     }
 };
 
-export { createTask, getTaskbyId, statusUpdate,UpdateTaskProf,getallproofbyId,allApRejRevTask,addFund };
+export { createTask, getTaskbyId, statusUpdate, UpdateTaskProf, getallproofbyId, allApRejRevTask, addFund };

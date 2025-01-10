@@ -41,10 +41,18 @@ let approve_task = async (req, res) => {
 
 let reject_task = async (req, res) => {
     const { id } = req.params;
-    const { reject_reason, status } = req.body;
+    const { reject_reason, status , advertiserId , totalPriceWithoutFee} = req.body;
     console.log(req.body);
 
     try {
+
+        let user = await User.findById({_id : advertiserId})
+        let returnFund = await User.findByIdAndUpdate(
+            advertiserId,
+            { advBalance : user.advBalance + totalPriceWithoutFee } ,
+            {new : true}
+            )
+            
         let reject = await Task.findByIdAndUpdate(
             id,
             { reject_reason, status },
