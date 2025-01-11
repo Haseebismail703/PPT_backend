@@ -113,14 +113,18 @@ const paidWithdrow = async (req, res) => {
      console.log(req.body,req.params)
     try {
 
-        if (status === "paid") {
-            const user = await User.findById({ _id: userId });
-            if (!user) {
-            return res.status(404).json({ message: "User not found" });
-            }
-            user.earning -= amount;
-            await user.save();
-            // console.log(user);
+        // if (status === "paid") {
+        //     const user = await User.findById({ _id: userId });
+        //     if (!user) {
+        //     return res.status(404).json({ message: "User not found" });
+        //     }
+        //     user.earning -= amount;
+        //     await user.save();
+        //     // console.log(user);
+        // }
+
+        if(status === "paid"){
+            await PayementModel.findByIdAndUpdate(id, { status ,TID }, { new: true });
         }
 
         if (!id) {
@@ -136,11 +140,10 @@ const paidWithdrow = async (req, res) => {
 
             // Update User's advBalance
             user.advBalance += amount;
-            user.status = status;
             await user.save();
 
             // Update Payment Model status
-            await PayementModel.findByIdAndUpdate(id, { status }, { new: true });
+            await PayementModel.findByIdAndUpdate(id, { status ,TID }, { new: true });
 
             return res.json({ message: "Balance updated successfully" });
         }
