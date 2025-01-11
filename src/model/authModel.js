@@ -39,6 +39,14 @@ const userSchema = new Schema(
             type: Schema.Types.String,
             default: "active",
         },
+        payeer: {
+            type: Schema.Types.String,
+            default: "",
+        },
+        perfectMoney: {
+            type: Schema.Types.String,
+            default: "",
+        },
         public_id: {
             type: Schema.Types.String,
             default: "",

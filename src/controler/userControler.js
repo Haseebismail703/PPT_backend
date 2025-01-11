@@ -174,7 +174,9 @@ let myWork = async (req, res) => {
 };
 // withdrow fund 
 const userPayment = async (req, res) => {
-  const { userId, paymentMethod, paymentType, amount } = req.body;
+  const { userId, paymentMethod, paymentType, amount , walletAddress} = req.body;
+
+   console.log(req.body)
 
   try {
     // Fetch user and get username
@@ -191,11 +193,20 @@ const userPayment = async (req, res) => {
       paymentType,
       amount,
       userName,
+      walletAddress
     });
 
     // Save the payment record to the database
     const addPayment = await payment.save();
 
+    if(addPayment){
+      let user = await User.findById({_id : userId})
+      await User.findByIdAndUpdate(
+        userId,
+        {earning : user.earning - amount },
+        {new : true} 
+      )
+    }
     // Respond with success
     return res.status(200).json({
       message: "Payment request successfully added",

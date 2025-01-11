@@ -159,11 +159,13 @@ let userProfile = async (req,res)=>{
       return res.status(500).json({ message: "Internal server error" });
   }
 }
-  const profileUpdate = async (req, res) => {
+
+
+const profileUpdate = async (req, res) => {
     const { id } = req.params;
-    const { username } = req.body;
+    const { username, perfectMoney, payeer } = req.body;
     const file = req.files ? req.files[0] : null; // Check if files are present
-  
+     console.log(req.body)
     try {
       // Find the user in the database
       let user = await User.findById(id);
@@ -195,7 +197,16 @@ let userProfile = async (req,res)=>{
         updateData.username = username;
       }
   
-      // Update the user's profile
+      // Update Payeer and PerfectMoney if provided
+      if (payeer) {
+        updateData.payeer = payeer;
+      }
+  
+      if (perfectMoney) {
+        updateData.perfectMoney = perfectMoney;
+      }
+  
+      // Update the user's profile in the database
       let update = await User.findByIdAndUpdate(id, updateData, { new: true });
   
       res.status(200).json({
@@ -210,6 +221,6 @@ let userProfile = async (req,res)=>{
         error: err.message, // Optional: Include error details for debugging
       });
     }
-};
-
+  };
+  
 export { signupUser, signinUser, adminLogin,userProfile,profileUpdate };

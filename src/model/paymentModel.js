@@ -27,6 +27,10 @@ const Payement = new Schema({
         type: Schema.Types.String,
         default : '',
     },
+    walletAddress: {
+        type: Schema.Types.String,
+        default : '',
+    },
     status : {
         type: Schema.Types.String,
         default : "pending"
