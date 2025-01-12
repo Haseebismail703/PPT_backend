@@ -110,21 +110,17 @@ let blockUser = async (req, res) => {
 const paidWithdrow = async (req, res) => {
     const { id } = req.params;
     const { TID, status, rejectReason, amount , userId } = req.body;
-     console.log(req.body,req.params)
+    //  console.log(req.body,req.params)
     try {
 
-        // if (status === "paid") {
-        //     const user = await User.findById({ _id: userId });
-        //     if (!user) {
-        //     return res.status(404).json({ message: "User not found" });
-        //     }
-        //     user.earning -= amount;
-        //     await user.save();
-        //     // console.log(user);
-        // }
-
-        if(status === "paid"){
-            await PayementModel.findByIdAndUpdate(id, { status ,TID }, { new: true });
+        if (status === "paid") {
+            const user = await User.findById({ _id: userId });
+            if (!user) {
+            return res.status(404).json({ message: "User not found" });
+            }
+            user.earning -= amount;
+            await user.save();
+            // console.log(user);
         }
 
         if (!id) {
@@ -140,10 +136,10 @@ const paidWithdrow = async (req, res) => {
 
             // Update User's advBalance
             user.advBalance += amount;
+            user.status = status;
             await user.save();
-
             // Update Payment Model status
-            await PayementModel.findByIdAndUpdate(id, { status ,TID }, { new: true });
+            await PayementModel.findByIdAndUpdate(id, { status }, { new: true });
 
             return res.json({ message: "Balance updated successfully" });
         }
@@ -188,4 +184,43 @@ let getReportTask = async (req, res) => {
         return res.status(500).json({ message: error.message });
     }
 }
-export { pendingTask, getTask, approve_task, reject_task ,getPayment,getUser,PaymentHistory,blockUser,paidWithdrow,getTaskReport,getReportTask}
+// get all in admin card 
+const getCardDeatail = async (req, res) => {
+    try {
+      // Fetch the required counts concurrently
+      const [
+        totalTasks,
+        totalUsers,
+        pendingPayouts,
+        runningTasks,
+        blockedUsers,
+        newUsers,
+        taskReports,
+      ] = await Promise.all([
+        Task.countDocuments(), // Total number of tasks
+        User.countDocuments(), // Total number of users
+        PayementModel.countDocuments({ status: "pending" }), // Pending payout requests
+        Task.countDocuments({ status: "Running" }), // Tasks currently running
+        User.countDocuments({ status: "blocked" }), // Users marked as blocked
+        User.countDocuments({
+            created_at: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }, // Users created in the last 7 days
+        }),
+        UserTaskSubmit.countDocuments(),
+      ]);
+  
+      // Send the aggregated data as a response
+      return res.status(200).json({
+        totalTasks,
+        totalUsers,
+        pendingPayouts,
+        runningTasks,
+        blockedUsers,
+        newUsers,
+        taskReports,
+      });
+    } catch (error) {
+      // Handle any server errors
+      return res.status(500).json({ message: "Internal server error", error: error.message });
+    }
+  };
+export { pendingTask, getTask, approve_task, reject_task ,getPayment,getUser,PaymentHistory,blockUser,paidWithdrow,getTaskReport,getReportTask,getCardDeatail}

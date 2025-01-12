@@ -4,6 +4,8 @@ import jwt from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
 import { configDotenv } from 'dotenv'
 import cloudinary from 'cloudinary'
+import Task from "../model/creteTask.js";
+import UserTaskSubmit from "../model/submitTask.js";
 configDotenv()
 
 cloudinary.config({
@@ -150,15 +152,41 @@ let adminLogin = async (req, res) => {
 }
 
 
-let userProfile = async (req,res)=>{
-    const {id} = req.params
-    try {
-      let user = await User.findById(id)
-      return res.status(200).json(user)
+let userProfile = async (req, res) => {
+  const { id } = req.params;
+  try {
+      // Find the user by ID
+      let user = await User.findById(id);
+      if (!user) {
+          return res.status(404).json({ message: "User not found" });
+      }
+
+      // Fetch completed, pending, and rejected task counts
+      let [getCompleteTask, getPendingTask, getRejectedTask] = await Promise.all([
+          UserTaskSubmit.countDocuments({ status: "approved", userId: id }),
+          UserTaskSubmit.countDocuments({ status: "pending", userId: id }),
+          UserTaskSubmit.countDocuments({ status: "rejected", userId: id }),
+      ]);
+
+      // Calculate total tasks and progress percentage
+      let totalTasks = getCompleteTask + getPendingTask + getRejectedTask;
+      let progress = totalTasks > 0 ? ((getCompleteTask / totalTasks) * 100).toFixed(2) : 0;
+      // Add task counts and progress to the user object
+      let userWithTasks = {
+          ...user.toObject(), // Convert Mongoose document to plain JavaScript object
+          completed: getCompleteTask,
+          pending: getPendingTask,
+          rejected: getRejectedTask,
+          progress: progress,
+      };
+
+      // Send the response
+      return res.status(200).json({ user: userWithTasks });
   } catch (error) {
-      return res.status(500).json({ message: "Internal server error" });
+      return res.status(500).json({ message: "Internal server error", error: error.message });
   }
-}
+};
+
 
 
 const profileUpdate = async (req, res) => {
