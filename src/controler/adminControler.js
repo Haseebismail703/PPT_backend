@@ -223,4 +223,5 @@ const getCardDeatail = async (req, res) => {
       return res.status(500).json({ message: "Internal server error", error: error.message });
     }
   };
+  
 export { pendingTask, getTask, approve_task, reject_task ,getPayment,getUser,PaymentHistory,blockUser,paidWithdrow,getTaskReport,getReportTask,getCardDeatail}
