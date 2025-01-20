@@ -113,83 +113,88 @@ const paidWithdrow = async (req, res) => {
     const { TID, status, rejectReason, amount, userId, messageId } = req.body;
 
     try {
-        if (status === "paid") {
-            const user = await User.findById(userId);
-            if (!user) {
-                return res.status(404).json({ message: "User not found" });
-            }
-            user.earning -= amount;
-            await user.save();
-        }
-
         if (!id) {
             return res.status(400).json({ message: "Payment ID is required" });
         }
 
-        if (status === "added") {
+        if (status === "paid" || status === "added") {
+            // Common user retrieval
             const user = await User.findById(userId);
             if (!user) {
                 return res.status(404).json({ message: "User not found" });
             }
 
-            // Update User's advBalance
-            user.advBalance += amount;
-            user.status = status;
-            await user.save();
+            if (status === "paid") {
+                // Deduct earnings for "paid" status
+                user.earning -= amount;
+                await user.save();
+                await PayementModel.findByIdAndUpdate(id, { status }, { new: true });
+                // Update notification for "paid" status
+                await noti.findOneAndUpdate(
+                    { messageId: messageId },
+                    { message: `${amount}$ paid successfully`, type: "Withdraw" },
+                    { new: true }
+                );
+            } else if (status === "added") {
+                // Add to advance balance for "added" status
+                user.advBalance += amount;
+                user.status = status;
+                await user.save();
 
-            // Update Payment Model status
-            await PayementModel.findByIdAndUpdate(id, { status }, { new: true });
+                // Update payment status
+                await PayementModel.findByIdAndUpdate(id, { status }, { new: true });
 
-            // Update notification
-            const updatedNoti = await noti.findOneAndUpdate(
-                { messageId },
-                { message: `${amount}$ added successfully`, type: "Deposit" },
-                { new: true }
-            );
+                // Update notification for "added" status
+                const updatedNoti = await noti.findOneAndUpdate(
+                    { messageId: messageId },
+                    { message: `${amount}$ added successfully`, type: "Deposit" },
+                    { new: true }
+                );
+                if (!updatedNoti) {
+                    return res.status(404).json({ message: "Notification not found for update" });
+                }
 
-            if (!updatedNoti) {
-                return res.status(404).json({ message: "Notification not found for update" });
+                return res.json({ message: "Balance updated successfully" });
             }
 
-            return res.json({ message: "Balance updated successfully" });
-        }
-
-        // Handle rejection notification
-        const updateData = { status };
-        if (amount) {
-            updateData.amount = amount;
+            return res.json({ message: `Status '${status}' processed successfully` });
         } else {
-            updateData.TID = TID;
-            updateData.rejectReason = rejectReason;
+            // Handle rejection status
+            const updateData = { status, TID, rejectReason };
+            if (amount) {
+                updateData.amount = amount;
+            }
+
+            // Update payment
+            const payment = await PayementModel.findByIdAndUpdate(id, updateData, { new: true });
+            if (!payment) {
+                return res.status(404).json({ message: "Payment record not found" });
+            }
+
+            // Update notification for rejection
+            const getNoti = await noti.findOne({ messageId : messageId });
+            // console.log(getNoti)
+            if (!getNoti) {
+                return res.status(404).json({ message: "Notification not found for rejection" });
+            }
+
+            const rejectedNoti = await noti.findByIdAndUpdate(
+                getNoti._id,
+                { message: `Your ${getNoti.type} request was rejected` },
+                { new: true }
+            );
+            if (!rejectedNoti) {
+                return res.status(404).json({ message: "Failed to update rejection notification" });
+            }
+
+            return res.json({ message: "Withdrawal request rejected successfully" });
         }
-
-        const payment = await PayementModel.findByIdAndUpdate(id, updateData, { new: true });
-        if (!payment) {
-            return res.status(404).json({ message: "Payment record not found" });
-        }
-
-        // Update notification for rejection
-        const getNoti = await noti.findOne( messageId );
-        if (!getNoti) {
-            return res.status(404).json({ message: "Notification not found for rejection" });
-        }
-
-        const rejectedNoti = await noti.findByIdAndUpdate(
-            {_id :  getNoti._id  },
-            { message: `Your ${getNoti.type} request was rejected`},
-            { new: true }
-        );
-
-        if (!rejectedNoti) {
-            return res.status(404).json({ message: "Failed to update rejection notification" });
-        }
-
-        res.json({ message: `Withdrawal request ${status} successfully`, payment });
     } catch (error) {
         console.error("Error in paidWithdrow:", error);
         res.status(500).json({ message: "Internal server error" });
     }
 };
+
 
 // getreport 
 let getTaskReport = async (req, res) => {

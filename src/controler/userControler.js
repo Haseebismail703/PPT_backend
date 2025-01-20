@@ -5,6 +5,7 @@ import cloudinary from 'cloudinary'
 import PayementModel from "../model/paymentModel.js";
 import User from "../model/authModel.js";
 import report from "../model/reportModel.js";
+import noti from "../model/notificationModel.js";
 configDotenv()
 
 cloudinary.config({
@@ -174,7 +175,7 @@ let myWork = async (req, res) => {
 };
 // withdrow fund 
 const userPayment = async (req, res) => {
-  const { userId, paymentMethod, paymentType, amount , walletAddress} = req.body;
+  const { userId, paymentMethod, paymentType, amount , walletAddress,path, message,role,type} = req.body;
 
    console.log(req.body)
 
@@ -206,6 +207,8 @@ const userPayment = async (req, res) => {
         {earning : user.earning - amount },
         {new : true} 
       )
+      const notif = new noti({ userId, path, message,role,type,messageId : addPayment._id });
+      const saveNoti = await notif.save();
     }
     // Respond with success
     return res.status(200).json({
