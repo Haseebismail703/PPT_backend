@@ -1,5 +1,6 @@
 import User from '../model/authModel.js';
 import Task from '../model/creteTask.js';
+import noti from '../model/notificationModel.js';
 import PayementModel from '../model/paymentModel.js';
 import UserTaskSubmit from '../model/submitTask.js';
 
@@ -23,14 +24,14 @@ let createTask = async (req, res) => {
 
         // Validation checks
         if (
-            !taskTitle || 
-            !taskDescription || 
-            !category || 
-            !subcategory || 
-            !instructions || 
-            !workersNeeded || 
-            !publisherReward || 
-            !targetCountries || 
+            !taskTitle ||
+            !taskDescription ||
+            !category ||
+            !subcategory ||
+            !instructions ||
+            !workersNeeded ||
+            !publisherReward ||
+            !targetCountries ||
             !advertiserId
         ) {
             return res.status(400).json({ message: "All fields are required" });
@@ -129,22 +130,22 @@ let getallproofbyId = async (req, res) => {
 };
 // reject approve revision task 
 let UpdateTaskProf = async (req, res) => {
-    const { userId, taskId, status, revisionComments , publisherReward } = req.body;
-    console.log (req.body)
+    const { userId, taskId, status, revisionComments, publisherReward } = req.body;
+    console.log(req.body)
 
     //update the task proof counting 
     let task = await Task.findById(taskId)
-    let submitTask = await UserTaskSubmit.findById({_id : taskId})
-    if(status === "reject"){
+    let submitTask = await UserTaskSubmit.findById({ _id: taskId })
+    if (status === "reject") {
         let taskreject = await Task.findOneAndUpdate(
-            { _id : taskId },
-            { taskProof : task.taskProof - 1 },
+            { _id: taskId },
+            { taskProof: task.taskProof - 1 },
             { new: true }
         );
-        if(task.status === "Complete"){
+        if (task.status === "Complete") {
             let statusUpdate = await Task.findOneAndUpdate(
-                { _id : taskId },
-                {status : "Running" , active : true },
+                { _id: taskId },
+                { status: "Running", active: true },
                 { new: true }
             );
         }
@@ -156,13 +157,13 @@ let UpdateTaskProf = async (req, res) => {
             { revision: true },
             { new: true }
         );
-    } 
-    
-    if (status === "approved"){
-        let getUser = await User.findById({_id : userId})
+    }
+
+    if (status === "approved") {
+        let getUser = await User.findById({ _id: userId })
         let updateEarning = await User.findOneAndUpdate(
-           {_id :  userId},
-            { earning : getUser.earning + publisherReward  },
+            { _id: userId },
+            { earning: getUser.earning + publisherReward },
             { new: true }
         );
     }
@@ -231,12 +232,9 @@ let allApRejRevTask = async (req, res) => {
 }
 // add fund in advertiser page
 const addFund = async (req, res) => {
+    const { userId, amount, paymentMethod, paymentType, TID,path,message,role,type } = req.body;
     // console.log(req.body);
-
     try {
-        // Input validation (Optional, depends on your needs)
-        const { userId, amount, paymentMethod, paymentType, TID } = req.body;
-
         if (!userId || !amount || !paymentMethod || !paymentType || !TID) {
             return res.status(400).json({ message: "All fields are required." });
         }
@@ -249,6 +247,11 @@ const addFund = async (req, res) => {
         // Create and save the payment
         const add = new PayementModel({ userId, amount, paymentMethod, paymentType, TID, userName });
         const addFund = await add.save();
+
+        if(addFund){
+        const notif = new noti({ userId, path, message,role,type,messageId : addFund._id });
+        const saveNoti = await notif.save();
+        }
         return res.status(201).json({ message: "Fund added successfully.", data: addFund });
     } catch (error) {
         // Handle errors

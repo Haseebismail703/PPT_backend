@@ -1,5 +1,6 @@
 import User from '../model/authModel.js'
 import Task from '../model/creteTask.js'
+import noti from '../model/notificationModel.js'
 import PayementModel from '../model/paymentModel.js'
 import report from '../model/reportModel.js'
 import UserTaskSubmit from '../model/submitTask.js'
@@ -109,27 +110,24 @@ let blockUser = async (req, res) => {
 }
 const paidWithdrow = async (req, res) => {
     const { id } = req.params;
-    const { TID, status, rejectReason, amount , userId } = req.body;
-    //  console.log(req.body,req.params)
-    try {
+    const { TID, status, rejectReason, amount, userId, messageId } = req.body;
 
+    try {
         if (status === "paid") {
-            const user = await User.findById({ _id: userId });
+            const user = await User.findById(userId);
             if (!user) {
-            return res.status(404).json({ message: "User not found" });
+                return res.status(404).json({ message: "User not found" });
             }
             user.earning -= amount;
             await user.save();
-            // console.log(user);
         }
 
         if (!id) {
-            return res.status(400).json({ message: "User ID is required" });
+            return res.status(400).json({ message: "Payment ID is required" });
         }
-        // Handle case when status is 'added'
-        if (status === 'added') {
-            const user = await User.findById({_id : userId});
 
+        if (status === "added") {
+            const user = await User.findById(userId);
             if (!user) {
                 return res.status(404).json({ message: "User not found" });
             }
@@ -138,13 +136,25 @@ const paidWithdrow = async (req, res) => {
             user.advBalance += amount;
             user.status = status;
             await user.save();
+
             // Update Payment Model status
             await PayementModel.findByIdAndUpdate(id, { status }, { new: true });
+
+            // Update notification
+            const updatedNoti = await noti.findOneAndUpdate(
+                { messageId },
+                { message: `${amount}$ added successfully`, type: "Deposit" },
+                { new: true }
+            );
+
+            if (!updatedNoti) {
+                return res.status(404).json({ message: "Notification not found for update" });
+            }
 
             return res.json({ message: "Balance updated successfully" });
         }
 
-        // Common logic for handling withdraw requests
+        // Handle rejection notification
         const updateData = { status };
         if (amount) {
             updateData.amount = amount;
@@ -154,9 +164,24 @@ const paidWithdrow = async (req, res) => {
         }
 
         const payment = await PayementModel.findByIdAndUpdate(id, updateData, { new: true });
-
         if (!payment) {
             return res.status(404).json({ message: "Payment record not found" });
+        }
+
+        // Update notification for rejection
+        const getNoti = await noti.findOne( messageId );
+        if (!getNoti) {
+            return res.status(404).json({ message: "Notification not found for rejection" });
+        }
+
+        const rejectedNoti = await noti.findByIdAndUpdate(
+            {_id :  getNoti._id  },
+            { message: `Your ${getNoti.type} request was rejected`},
+            { new: true }
+        );
+
+        if (!rejectedNoti) {
+            return res.status(404).json({ message: "Failed to update rejection notification" });
         }
 
         res.json({ message: `Withdrawal request ${status} successfully`, payment });
@@ -165,6 +190,7 @@ const paidWithdrow = async (req, res) => {
         res.status(500).json({ message: "Internal server error" });
     }
 };
+
 // getreport 
 let getTaskReport = async (req, res) => {
     try {
