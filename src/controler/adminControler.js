@@ -34,6 +34,13 @@ let approve_task = async (req, res) => {
             { status, active },
             { new: true },
         )
+        if(approve){
+            let approveNoti = await noti.findOneAndUpdate(
+                {messageId : id},
+                { message : "Youre Task has been Approve " },
+                { new: true },
+            )
+        }
         res.json({ message: 'Task status updated successfully', approve });
     } catch (error) {
         return res.status(500).json({ message: "Internal server error" });
@@ -58,6 +65,15 @@ let reject_task = async (req, res) => {
             { reject_reason, status },
             { new: true },
         )
+
+
+        if(reject){
+            let rejectNoti = await noti.findOneAndUpdate(
+                {messageId : id},
+                { message : "Youre Task has been reject" },
+                { new: true },
+            )
+        }
         res.json({ message: 'Task status updated successfully', reject });
     } catch (error) {
         return res.status(500).json({ message: "Internal server error" });
@@ -194,8 +210,6 @@ const paidWithdrow = async (req, res) => {
         res.status(500).json({ message: "Internal server error" });
     }
 };
-
-
 // getreport 
 let getTaskReport = async (req, res) => {
     try {

@@ -18,6 +18,10 @@ let createTask = async (req, res) => {
             publisherReward,
             targetCountries,
             advertiserId,
+            path,
+            message,
+            type,
+            role
         } = req.body;
 
         console.log(req.body);
@@ -85,7 +89,19 @@ let createTask = async (req, res) => {
         });
 
         // Save task to MongoDB
-        await newTask.save();
+        let saveTask = await newTask.save();
+        /// create notification
+        if (saveTask) {
+            let taskNoti = new noti({
+                userId: advertiserId,
+                path,
+                message,
+                type,
+                role ,
+                messageId : saveTask._id
+            })
+            let saveTaskNoti = await taskNoti.save()
+        }
 
         // Return success response
         return res.status(200).json({
@@ -232,7 +248,7 @@ let allApRejRevTask = async (req, res) => {
 }
 // add fund in advertiser page
 const addFund = async (req, res) => {
-    const { userId, amount, paymentMethod, paymentType, TID,path,message,role,type } = req.body;
+    const { userId, amount, paymentMethod, paymentType, TID, path, message, role, type } = req.body;
     // console.log(req.body);
     try {
         if (!userId || !amount || !paymentMethod || !paymentType || !TID) {
@@ -248,9 +264,9 @@ const addFund = async (req, res) => {
         const add = new PayementModel({ userId, amount, paymentMethod, paymentType, TID, userName });
         const addFund = await add.save();
 
-        if(addFund){
-        const notif = new noti({ userId, path, message,role,type,messageId : addFund._id });
-        const saveNoti = await notif.save();
+        if (addFund) {
+            const notif = new noti({ userId, path, message, role, type, messageId: addFund._id });
+            const saveNoti = await notif.save();
         }
         return res.status(201).json({ message: "Fund added successfully.", data: addFund });
     } catch (error) {
